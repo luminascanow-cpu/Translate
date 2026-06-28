@@ -1,0 +1,6 @@
+{
+  "name": "BhashaSetu",
+  "description": "An AI-powered OCR translation and learning assistant that bridges script and syntax in Indian languages.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
