@@ -11,7 +11,7 @@ export default function Navigation({ currentTab, onNavigate }: NavigationProps) 
   const tabs: Array<{ id: AppPage; label: string; icon: any; highlight?: boolean }> = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'history', label: 'History', icon: History },
-    { id: 'ocr', label: 'OCR', icon: Camera, highlight: true },
+    { id: 'ocr', label: 'Scan', icon: Camera, highlight: true },
     { id: 'learn', label: 'Learn', icon: BookOpen },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -20,7 +20,7 @@ export default function Navigation({ currentTab, onNavigate }: NavigationProps) 
     <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-2 pb-6 bg-white border-t border-gray-100 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] rounded-t-xl h-20 max-w-screen-xl mx-auto left-0 right-0">
       {tabs.map((tab) => {
         const Icon = tab.icon;
-        // In our app, OCR tab can transition to "results" tab, so we highlight the OCR button for both 'ocr' and 'results' page
+        // In our app, Scan tab can transition to "results" tab, so we highlight the Scan button for both 'ocr' and 'results' page
         const isActive = currentTab === tab.id || (tab.id === 'ocr' && currentTab === 'results');
 
         if (tab.highlight) {

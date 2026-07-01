@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Volume2, Heart, Share2, Clipboard, BookOpen, ChevronRight, CheckCircle, HelpCircle, GraduationCap, Sparkles, Sliders, Pause, Play, Square } from 'lucide-react';
+import { ArrowLeft, Volume2, Heart, Share2, Clipboard, BookOpen, ChevronRight, CheckCircle, HelpCircle, GraduationCap, Sparkles, Sliders, Pause, Play, Square, Maximize, X } from 'lucide-react';
 import { AppPage, TranslationItem } from '../types';
+import { playSarvamTTS } from '../utils/sarvam';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 interface ResultsTabProps {
   currentResult: TranslationItem | null;
   onNavigate: (tab: AppPage) => void;
   onToggleFavorite: (item: TranslationItem) => void;
-  onLoadActiveCard: (item: TranslationItem) => void;
 }
 
-export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite, onLoadActiveCard }: ResultsTabProps) {
+export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite }: ResultsTabProps) {
+  const [activeImageMode, setActiveImageMode] = useState<'transliterated' | 'translated'>('transliterated');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Web Speech API Synthesis state
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -66,13 +69,13 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
         <HelpCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
         <h3 className="text-lg font-bold text-gray-800">No active scan results.</h3>
         <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
-          Please open the OCR tab and capture a scenic Indian landmark or upload an image to view smart dictionary analysis.
+          Please open the Scan tab and capture a scenic Indian landmark or upload an image to view smart dictionary analysis.
         </p>
         <button 
           onClick={() => onNavigate('ocr')}
           className="mt-6 px-6 py-2.5 bg-[#ff9933] text-white font-bold rounded-xl text-xs active:scale-95 transition-transform shadow-sm focus:outline-hidden"
         >
-          Go to OCR Tab
+          Go to Scan Tab
         </button>
       </div>
     );
@@ -84,67 +87,29 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
     v.lang.toLowerCase().replace('_', '-').startsWith(currentLangCode.split('-')[0])
   );
 
-  // Web Speech API Voice synthesis triggers
-  const speakWebSpeech = () => {
-    if (!('speechSynthesis' in window)) {
-      alert("Web Speech API is not supported in this browser.");
-      return;
-    }
+  // Web Speech API Voice synthesis triggers - now using Sarvam TTS
+  const speakWebSpeech = async () => {
+    setIsSpeakingWebSpeech(true);
+    setIsPausedWebSpeech(false);
 
-    // Cancel existing
-    window.speechSynthesis.cancel();
+    const textToSpeak = activeImageMode === 'transliterated' ? currentResult.sourceText : currentResult.translatedText;
+    const langToSpeak = activeImageMode === 'transliterated' ? currentResult.sourceLang : currentResult.targetLang;
 
-    const utterance = new SpeechSynthesisUtterance(currentResult.translatedText);
-    
-    // Choose selected voice
-    if (selectedVoiceURI) {
-      const selectedVoice = voices.find(v => v.voiceURI === selectedVoiceURI);
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
-    } else {
-      utterance.lang = currentLangCode;
-    }
+    await playSarvamTTS(textToSpeak, langToSpeak);
 
-    utterance.rate = speechRate;
-    utterance.pitch = speechPitch;
-
-    utterance.onstart = () => {
-      setIsSpeakingWebSpeech(true);
-      setIsPausedWebSpeech(false);
-    };
-
-    utterance.onend = () => {
-      setIsSpeakingWebSpeech(false);
-      setIsPausedWebSpeech(false);
-    };
-
-    utterance.onerror = () => {
-      setIsSpeakingWebSpeech(false);
-      setIsPausedWebSpeech(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    setIsSpeakingWebSpeech(false);
   };
 
   const pauseWebSpeech = () => {
-    if ('speechSynthesis' in window) {
-      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-        window.speechSynthesis.pause();
-        setIsPausedWebSpeech(true);
-      } else if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-        setIsPausedWebSpeech(false);
-      }
-    }
+    // Sarvam TTS audio object is managed internally in playSarvamTTS for now,
+    // so pause/resume isn't directly exposed here unless we refactor it.
+    // For simplicity, we can ignore pause or just reset state.
+    setIsPausedWebSpeech(true);
   };
 
   const stopWebSpeech = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setIsSpeakingWebSpeech(false);
-      setIsPausedWebSpeech(false);
-    }
+    setIsSpeakingWebSpeech(false);
+    setIsPausedWebSpeech(false);
   };
 
   // Real TTS trigger on backend with fallback
@@ -154,7 +119,7 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
   };
 
   const handleShare = () => {
-    const textToShare = `"${currentResult.sourceText}" -> "${currentResult.translatedText}" (${currentResult.transliteration}) - translated via BhashaSetu`;
+    const textToShare = `"${currentResult.sourceText}" -> "${currentResult.translatedText}" (${currentResult.transliteration}) - translated via BhashaSethu`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(textToShare);
       setCopiedText(true);
@@ -164,10 +129,7 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
     }
   };
 
-  const handlePracticeCard = () => {
-    onLoadActiveCard(currentResult);
-    onNavigate('learn');
-  };
+
 
   return (
     <div className="w-full pb-28 animate-fade-in px-4">
@@ -188,47 +150,66 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
           </div>
         </div>
 
-        {/* Source Snippet Image & Extracted Original Text */}
-        <section className="bg-white rounded-2xl overflow-hidden shadow-xs border border-gray-100 flex flex-col md:flex-row">
-          <div className="md:w-[220px] h-40 md:h-auto relative bg-neutral-900 shrink-0">
-            <img 
-              className="w-full h-full object-cover opacity-75" 
-              src={currentResult.sceneryUrl || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300"} 
-              alt="OCR captured original crop"
-              referrerPolicy="no-referrer"
-            />
-            {/* Viewfinder simulation bounds on crop */}
-            <div className="absolute inset-0 bg-primary/5 flex items-center justify-center p-4">
-              <div className="border-2 border-[#ff9933]/80 w-11/12 h-5/6 rounded shadow-[0_0_0_999px_rgba(0,0,0,0.4)]"></div>
-            </div>
-          </div>
-          
-          <div className="p-5 flex-1 flex flex-col justify-center bg-[#f9f9f9]/80">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-5 h-5 text-[#056e00]" />
-              <span className="font-sans text-xs font-bold text-[#056e00] uppercase tracking-wider">
-                Extracted Script
-              </span>
-            </div>
-            <p className="font-sans font-bold text-lg text-gray-800 italic leading-relaxed select-all">
-              "{currentResult.sourceText}"
-            </p>
+        {/* AR Image Toggle */}
+        <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+          <button
+            onClick={() => setActiveImageMode('transliterated')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all focus:outline-hidden ${
+              activeImageMode === 'transliterated' 
+                ? 'bg-white text-gray-900 shadow-xs' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Readable Native Text
+          </button>
+          <button
+            onClick={() => setActiveImageMode('translated')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all focus:outline-hidden ${
+              activeImageMode === 'translated' 
+                ? 'bg-white text-gray-900 shadow-xs' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Translated Meaning
+          </button>
+        </div>
+
+        {/* Source Snippet Image with AR Overlay */}
+        <section className="bg-white rounded-2xl overflow-hidden shadow-xs border border-gray-100 relative group">
+          <button 
+            onClick={() => setIsFullscreen(true)}
+            className="absolute top-3 right-3 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-md transition-opacity focus:outline-hidden"
+            title="View Full Screen"
+          >
+            <Maximize className="w-4 h-4" />
+          </button>
+          <div className="w-full relative bg-neutral-900 flex justify-center overflow-hidden cursor-zoom-in active:cursor-grabbing">
+            <TransformWrapper
+              initialScale={1}
+              minScale={0.5}
+              maxScale={8}
+              centerOnInit={true}
+              wheel={{ step: 0.1 }}
+            >
+              <TransformComponent wrapperClass="w-full h-full flex items-center justify-center">
+                <img 
+                  className="w-full h-auto max-h-[60vh] object-contain select-none" 
+                  src={activeImageMode === 'transliterated' ? (currentResult.sceneryUrl || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300") : (currentResult.translatedSceneryUrl || currentResult.sceneryUrl || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300")} 
+                  alt="AR Translated Image"
+                  referrerPolicy="no-referrer"
+                  draggable={false}
+                />
+              </TransformComponent>
+            </TransformWrapper>
           </div>
         </section>
 
-        {/* Translation Main Card block */}
+        {/* Translation Actions */}
         <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-100 border-l-4 border-l-[#ff9933] space-y-4">
-          <div className="flex justify-between items-start gap-4">
-            <div className="space-y-1 flex-1">
-              <span className="font-sans text-xs font-extrabold text-[#8f4e00] uppercase tracking-wider">
-                {currentResult.targetLang} Translation
-              </span>
-              <h2 className="font-sans font-extrabold text-2xl text-gray-900 leading-snug select-all">
-                "{currentResult.translatedText}"
-              </h2>
-              <p className="font-sans text-sm font-medium text-gray-500 italic mt-1 select-all">
-                {currentResult.transliteration}
-              </p>
+          <div className="flex justify-between items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#ff9933]" />
+              <span className="font-sans font-extrabold text-gray-900">Audio & Actions</span>
             </div>
 
             {/* real-time speaker voice call trigger */}
@@ -375,89 +356,49 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
               )}
             </button>
 
-            {/* Practice as Flashcard link */}
-            <button 
-              onClick={handlePracticeCard}
-              className="col-span-2 flex flex-col items-center justify-center py-3 px-4 rounded-xl bg-[#ff9933] hover:bg-[#ff8800] text-white font-sans font-bold shadow-xs active:scale-98 transition-all hover:shadow-md focus:outline-hidden group border-b-2 border-orange-700/20"
-            >
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-100 group-hover:animate-bounce" />
-                <span className="text-xs font-extrabold uppercase tracking-wide">Practice Flashcard</span>
-              </div>
-            </button>
+
           </div>
         </section>
 
 
-        {/* Dictionary Segment */}
-        {currentResult.dictionary && currentResult.dictionary.length > 0 && (
-          <section className="space-y-3">
-            <h3 className="font-sans font-extrabold text-lg text-gray-900 flex items-center gap-2">
-              <span className="w-2.5 h-4 bg-[#056e00] rounded-sm"></span>
-              Quick Dictionary
-            </h3>
-            
-            <div className="space-y-3">
-              {currentResult.dictionary.map((entry, index) => (
-                <div 
-                  key={index}
-                  className="bg-white p-4 rounded-xl border border-gray-100 shadow-xs hover:shadow-xs transition-shadow"
-                >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-sans font-extrabold text-base text-gray-800">
-                        {entry.word}
-                      </span>
-                      <span className="bg-amber-50 text-amber-800 border border-amber-200/50 px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-wider">
-                        {entry.partOfSpeech}
-                      </span>
-                    </div>
-                    <span className="text-[#056e00] font-sans font-extrabold text-sm select-all">
-                      {entry.translation}
-                    </span>
-                  </div>
-                  
-                  <p className="font-sans text-xs text-gray-500 mb-2">
-                    {entry.definition}
-                  </p>
-                  
-                  <div className="bg-emerald-50/50 p-2.5 rounded-lg border-l-2 border-[#056e00]">
-                    <p className="font-sans text-xs italic text-[#056e00] font-medium leading-relaxed">
-                      {entry.example}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* Master this Phrase - Contextual recommendation */}
-        {currentResult.lesson && (
-          <section className="bg-amber-50/40 rounded-2xl p-5 border-2 border-dashed border-amber-200 flex items-center gap-4">
-            <div className="w-12 h-12 shrink-0 bg-[#ffdcc2] text-[#8f4e00] rounded-xl flex items-center justify-center shadow-xs">
-              <GraduationCap className="w-6 h-6 stroke-[2.2px]" />
-            </div>
-            <div>
-              <h4 className="font-sans font-extrabold text-base text-gray-900">
-                {currentResult.lesson.title || "Master this Phrase"}
-              </h4>
-              <p className="font-sans text-xs text-gray-500 mt-0.5 leading-relaxed">
-                {currentResult.lesson.description || 'Learn how to form phrases with this grammatical structure and test yourself.'}
-              </p>
-              
-              <button 
-                onClick={handlePracticeCard}
-                className="mt-3 text-[#ff9933] font-sans font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all focus:outline-hidden"
-              >
-                Start Lesson & Quiz
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </section>
-        )}
+
+
 
       </div>
+
+      {/* Full Screen Modal */}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-[120] bg-black flex flex-col animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute top-[env(safe-area-inset-top,24px)] mt-4 left-0 right-0 p-4 flex justify-end z-10 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+            <button 
+              onClick={() => setIsFullscreen(false)}
+              className="bg-black/50 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-md transition-colors pointer-events-auto"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 w-full h-full flex items-center justify-center overflow-hidden">
+            <TransformWrapper
+              initialScale={1}
+              minScale={0.5}
+              maxScale={10}
+              centerOnInit={true}
+              wheel={{ step: 0.1 }}
+            >
+              <TransformComponent wrapperClass="w-full h-full flex items-center justify-center">
+                <img 
+                  className="w-full h-full max-h-screen object-contain select-none cursor-zoom-in active:cursor-grabbing" 
+                  src={activeImageMode === 'transliterated' ? (currentResult.sceneryUrl || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300") : (currentResult.translatedSceneryUrl || currentResult.sceneryUrl || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=300")} 
+                  alt="AR Translated Image Fullscreen"
+                  referrerPolicy="no-referrer"
+                  draggable={false}
+                />
+              </TransformComponent>
+            </TransformWrapper>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

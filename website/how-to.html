@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Use BhashaSethu</title>
+    <meta name="description" content="A comprehensive guide on how to use the BhashaSethu AR translation engine." />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+      .content-section {
+        max-width: 800px;
+        margin: 120px auto 40px auto;
+        padding: 40px 20px;
+        color: #f0f0f0;
+      }
+      .content-section h1 {
+        font-family: 'Outfit', sans-serif;
+        color: #ff9933;
+        margin-bottom: 20px;
+        font-size: 2.5rem;
+      }
+      .content-section h2 {
+        font-family: 'Outfit', sans-serif;
+        color: #ffbb77;
+        margin-top: 40px;
+        margin-bottom: 15px;
+        font-size: 1.8rem;
+        border-bottom: 1px solid rgba(255, 153, 51, 0.2);
+        padding-bottom: 10px;
+      }
+      .content-section p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+        font-size: 1.1rem;
+      }
+      .content-section ul, .content-section ol {
+        margin-bottom: 20px;
+        padding-left: 20px;
+      }
+      .content-section li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+        font-size: 1.1rem;
+      }
+      .content-section img {
+        max-width: 100%;
+        border-radius: 12px;
+        margin: 20px 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      .tip-box {
+        background: rgba(255, 153, 51, 0.1);
+        border-left: 4px solid #ff9933;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .tip-box strong {
+        color: #ff9933;
+      }
+      .caption {
+        font-size: 0.9rem;
+        color: #999;
+        text-align: center;
+        margin-top: -10px;
+        margin-bottom: 30px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Elements -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="noise-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar glass">
+      <div class="nav-container">
+        <div class="logo">
+          <a href="/" style="display: flex; align-items: center; text-decoration: none; color: white;">
+            <img src="/logo.png" alt="BhashaSethu Logo" class="logo-img" />
+            <span class="logo-text">BhashaSethu</span>
+          </a>
+        </div>
+        <div class="nav-links">
+          <a href="/#features">Features</a>
+          <a href="/how-to.html" style="color: #ff9933;">How It Works</a>
+          <a href="/#download" class="btn btn-primary">Download App</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="content-section glass-dark">
+      <h1>How to Use BhashaSethu: The AR Translation Engine</h1>
+      <p>Welcome to BhashaSethu! This guide will walk you through the core features of the app and how to get the most out of your translation experience.</p>
+      
+      <h2>1. Smart AR Translation (Camera Lens)</h2>
+      <p>The core feature of BhashaSethu is the ability to point your camera at any foreign text (like street signs, menus, or posters) and see the translation seamlessly overlaid in the real world.</p>
+      
+      <div class="tip-box">
+        <strong>TIP:</strong> Make sure you select your Target Language in the top right corner before scanning!
+      </div>
+      
+      <p><strong>How to use:</strong></p>
+      <ol>
+        <li>Tap the <strong>Camera Icon</strong> at the bottom center of the screen to open the Lens.</li>
+        <li>Point your camera at a sign or document.</li>
+        <li>Tap the capture button.</li>
+        <li>The AI will instantly analyze the layout and seamlessly paint the translated text over the original words.</li>
+      </ol>
+      
+      <img src="/ocr-screen.png" alt="AR Translation in Action">
+      <div class="caption">Example: Translating a Japanese street sign into English using the Smart AR Lens.</div>
+      
+      <h2>2. Clean Document Mode</h2>
+      <p>When translating dense documents like textbook pages, the original text can sometimes bleed through or make the layout look chaotic. <strong>Clean Doc Mode</strong> solves this by hiding the original text behind neat, white blocks while preserving all surrounding graphics and illustrations!</p>
+      
+      <div class="tip-box">
+        <strong>IMPORTANT:</strong> Use this mode when scanning textbooks, newspapers, or any document with lots of paragraphs and background images.
+      </div>
+      
+      <p><strong>How to use:</strong></p>
+      <ol>
+        <li>Open the Camera Lens.</li>
+        <li>Toggle on the <strong>Clean Doc Mode</strong> switch at the top of the screen.</li>
+        <li>Snap a photo of the document.</li>
+        <li>The app will preserve the graphics (like illustrations or charts) but neatly wipe away the original text, replacing it with perfectly sized translated text on white backgrounds.</li>
+      </ol>
+      
+      <img src="/clean-doc.png" alt="Clean Doc Mode">
+      <div class="caption">Example: Clean Doc Mode translating a textbook page while perfectly preserving the character illustration in the background.</div>
+      
+      <h2>3. Read & Pronounce Native Languages (Our USP!)</h2>
+      <p>What truly sets BhashaSethu apart from other translation apps is its focus on <strong>teaching you how to read the language</strong>. Instead of just giving you the translation, we provide a phonetic pronunciation guide (transliteration) in English letters!</p>
+      
+      <div class="tip-box">
+        <strong>NOTE:</strong> You can also tap the <strong>Speaker Icon</strong> next to any translation to hear it spoken aloud by a native speaker.
+      </div>
+      
+      <p><strong>How it works:</strong></p>
+      <ol>
+        <li>Scan or type any text in a regional language.</li>
+        <li>Look just below the translated text to find the <strong>Transliteration</strong> section.</li>
+        <li>Read the phonetic English text to perfectly pronounce the regional language word!</li>
+      </ol>
+      
+      <img src="/transliteration.png" alt="Transliteration and Audio Feature">
+      <div class="caption">Example: Reading a children's textbook in Hindi, with the app providing a phonetic guide (transliteration) to help practice speaking it out loud.</div>
+      
+      <h2>4. Quick Text Translation</h2>
+      <p>If you just need to translate a quick word or phrase without using the camera, you can use the Quick Translate box right on the Home screen.</p>
+      
+      <p><strong>How to use:</strong></p>
+      <ol>
+        <li>Go to the <strong>Home</strong> tab.</li>
+        <li>Type your phrase into the "Quick Translate" input box.</li>
+        <li>Tap <strong>Translate</strong>.</li>
+        <li>The translation will appear instantly below the box.</li>
+      </ol>
+      
+      <h2>5. Recent Translations & History</h2>
+      <p>BhashaSethu automatically saves your recent translation scans so you can refer back to them later without having to re-scan the document.</p>
+      
+      <div class="tip-box">
+        <strong>NOTE:</strong> To save space and keep your log clean, the app automatically retains only your <strong>3 most recent scans</strong>. Older scans are safely cleared out.
+      </div>
+      
+      <p><strong>How to use:</strong></p>
+      <ol>
+        <li>On the <strong>Home</strong> tab, scroll down to see your 3 most recent scans highlighted.</li>
+        <li>Tap on any item in the list to open the full AR image view.</li>
+        <li>To manage your logs, tap <strong>View All</strong> or navigate to the <strong>History</strong> tab (clock icon) to delete items or save them to your Favorites.</li>
+      </ol>
+      
+      <h2>6. Freemium Usage Limits & Pro Upgrade</h2>
+      <p>BhashaSethu offers a generous free tier for everyday usage, with an option to unlock unlimited access.</p>
+      <ul>
+        <li><strong>Free Users</strong> are granted up to <strong>3 camera scans per day</strong>.</li>
+        <li><strong>Ad-Supported Extras:</strong> If you run out of free scans, you will be prompted to watch a short Video Ad to instantly unlock 2 more free scans!</li>
+        <li><strong>Pro Upgrade:</strong> In the <strong>Settings</strong> tab, there is a premium <strong>"BhashaSethu Pro"</strong> upgrade card. Clicking this allows you to purchase the subscription—you are instantly granted Pro status, which removes all daily limits and removes all ads.</li>
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="logo">
+            <img src="/logo.png" alt="BhashaSethu Logo" class="logo-img" />
+            <span class="logo-text">BhashaSethu</span>
+          </div>
+          <p>Supporting Hindi, Bengali, Tamil, Telugu, Marathi, and English.</p>
+        </div>
+        <div class="footer-links">
+          <a href="mailto:luminascan365@gmail.com">Contact Us (luminascan365@gmail.com)</a>
+          <a href="/privacy.html">Privacy Policy (We don't store your photos)</a>
+          <a href="/terms.html">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 BhashaSethu. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>

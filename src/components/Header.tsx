@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Bell } from 'lucide-react';
 import { AppPage } from '../types';
+import { Capacitor } from '@capacitor/core';
 
 interface HeaderProps {
   currentTab: AppPage;
@@ -9,9 +10,11 @@ interface HeaderProps {
   userName?: string;
 }
 
-export default function Header({ currentTab, onNavigate, title = "BhashaSetu", userName = "Arpita" }: HeaderProps) {
+export default function Header({ currentTab, onNavigate, title = "Bashasethu", userName = "Arpita" }: HeaderProps) {
+  const isNative = Capacitor.isNativePlatform();
+  
   return (
-    <header className="w-full top-0 sticky bg-white shadow-xs border-b border-gray-100 z-50 transition-colors">
+    <header className={`w-full top-0 sticky bg-white shadow-xs border-b border-gray-100 z-50 transition-colors ${isNative ? 'pt-8' : ''}`}>
       <div className="flex items-center justify-between px-4 h-16 w-full max-w-screen-xl mx-auto">
         <div className="flex items-center gap-3">
           <button 
@@ -35,12 +38,7 @@ export default function Header({ currentTab, onNavigate, title = "BhashaSetu", u
         </div>
         
         <div className="flex items-center gap-2">
-          {userName && (
-            <span className="hidden sm:inline font-sans text-xs font-semibold text-gray-500 uppercase tracking-wider bg-amber-50 px-2 py-1 rounded-sm border border-amber-100/50">
-              Namaste, {userName}!
-            </span>
-          )}
-          
+
           <button 
             onClick={() => alert(`You have no unread notifications. Stay tuned for bilingual updates!`)}
             className="active:scale-95 duration-150 p-2 rounded-full hover:bg-gray-100 transition-colors relative focus:outline-hidden"

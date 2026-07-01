@@ -9,56 +9,127 @@ import LearnTab from './components/LearnTab';
 import HistoryTab from './components/HistoryTab';
 import SettingsTab from './components/SettingsTab';
 import { AppPage, TranslationItem } from './types';
+import { initializeMonetization, prepareRewardedAd, checkProStatus } from './services/monetization';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<AppPage>('home');
   const [userName, setUserName] = useState<string>("Arpita");
+  const [sourceLanguage, setSourceLanguage] = useState<string>("English");
   const [targetLanguage, setTargetLanguage] = useState<string>("Hindi");
   const [currentResult, setCurrentResult] = useState<TranslationItem | null>(null);
-  const [activeCardItem, setActiveCardItem] = useState<TranslationItem | null>(null);
   const [history, setHistory] = useState<TranslationItem[]>([]);
+
+  // Freemium State
+  const [isPro, setIsPro] = useState<boolean>(false);
+  const [scansToday, setScansToday] = useState<number>(0);
+
+  // App Initialization
+  useEffect(() => {
+    const initApp = async () => {
+      // 1. Initialize AdMob & RevenueCat
+      await initializeMonetization();
+      
+      // 2. Pre-load the first video ad so it's ready instantly
+      await prepareRewardedAd();
+      
+      // 3. Check if user is already subscribed
+      const proStatus = await checkProStatus();
+      setIsPro(proStatus);
+    };
+    
+    initApp();
+  }, []);
 
   // Load state on startup
   useEffect(() => {
     try {
-      const storedName = localStorage.getItem('bhashasetu_username');
+      const storedName = localStorage.getItem('bhashasethu_username');
       if (storedName) setUserName(storedName);
 
-      const storedLang = localStorage.getItem('bhashasetu_lang');
+      const storedLang = localStorage.getItem('bhashasethu_lang');
       if (storedLang) setTargetLanguage(storedLang);
 
-      const storedHistory = localStorage.getItem('bhashasetu_history');
+      const storedSourceLang = localStorage.getItem('bhashasethu_source_lang');
+      if (storedSourceLang) setSourceLanguage(storedSourceLang);
+
+      const storedHistory = localStorage.getItem('bhashasethu_history');
       if (storedHistory) {
-        setHistory(JSON.parse(storedHistory));
+        setHistory(JSON.parse(storedHistory).slice(0, 3));
       }
+
+      // Freemium logic
+      const storedIsPro = localStorage.getItem('bhashasethu_is_pro');
+      if (storedIsPro === 'true') setIsPro(true);
+
+      const storedScans = localStorage.getItem('bhashasethu_scans');
+      const storedDate = localStorage.getItem('bhashasethu_scan_date');
+      const today = new Date().toISOString().split('T')[0];
+
+      if (storedDate === today) {
+        if (storedScans) setScansToday(parseInt(storedScans, 10));
+      } else {
+        localStorage.setItem('bhashasethu_scan_date', today);
+        localStorage.setItem('bhashasethu_scans', '0');
+        setScansToday(0);
+      }
+
     } catch (err) {
       console.error("Failed to load state from localStorage:", err);
     }
   }, []);
 
-  // Sync profile name
   const handleSetUserName = (name: string) => {
     setUserName(name);
-    localStorage.setItem('bhashasetu_username', name);
+    localStorage.setItem('bhashasethu_username', name);
   };
 
-  // Sync target language
   const handleSetTargetLanguage = (lang: string) => {
     setTargetLanguage(lang);
-    localStorage.setItem('bhashasetu_lang', lang);
+    localStorage.setItem('bhashasethu_lang', lang);
   };
 
-  // Save new translation log
+  const handleSetSourceLanguage = (lang: string) => {
+    setSourceLanguage(lang);
+    localStorage.setItem('bhashasethu_source_lang', lang);
+  };
+
+  const handleSetIsPro = (val: boolean) => {
+    setIsPro(val);
+    localStorage.setItem('bhashasethu_is_pro', val.toString());
+  };
+
+  const handleIncrementScan = () => {
+    const newCount = scansToday + 1;
+    setScansToday(newCount);
+    localStorage.setItem('bhashasethu_scans', newCount.toString());
+  };
+
+  const handleUnlockScans = (amount: number) => {
+    const newCount = Math.max(0, scansToday - amount);
+    setScansToday(newCount);
+    localStorage.setItem('bhashasethu_scans', newCount.toString());
+  };
+
   const handleSetCurrentResult = (newResult: TranslationItem) => {
     setCurrentResult(newResult);
-    
-    // Append to history list
-    const updatedHistory = [newResult, ...history];
+    const updatedHistory = [newResult, ...history].slice(0, 3);
     setHistory(updatedHistory);
-    localStorage.setItem('bhashasetu_history', JSON.stringify(updatedHistory));
+    saveHistoryToStorage(updatedHistory);
   };
 
-  // Toggle favorite status on any translation item
+  const saveHistoryToStorage = (hist: TranslationItem[]) => {
+    try {
+      const historyToSave = hist.map(item => ({
+        ...item,
+        sceneryUrl: "",
+        translatedSceneryUrl: ""
+      }));
+      localStorage.setItem('bhashasethu_history', JSON.stringify(historyToSave));
+    } catch (e) {
+      console.warn("Storage quota exceeded or error saving history:", e);
+    }
+  };
+
   const handleToggleFavorite = (item: TranslationItem) => {
     const updatedHistory = history.map((histItem) => {
       if (histItem.id === item.id) {
@@ -68,63 +139,36 @@ export default function App() {
     });
 
     setHistory(updatedHistory);
-    localStorage.setItem('bhashasetu_history', JSON.stringify(updatedHistory));
+    saveHistoryToStorage(updatedHistory);
 
-    // Also update active view if it is the currentResult
     if (currentResult && currentResult.id === item.id) {
       setCurrentResult({ ...currentResult, isFavorite: !currentResult.isFavorite });
     }
   };
 
-  // Delete log item
   const handleDeleteHistoryItem = (id: string) => {
     const updatedHistory = history.filter((item) => item.id !== id);
     setHistory(updatedHistory);
-    localStorage.setItem('bhashasetu_history', JSON.stringify(updatedHistory));
+    saveHistoryToStorage(updatedHistory);
 
     if (currentResult && currentResult.id === id) {
       setCurrentResult(null);
     }
   };
 
-  // Select item from history to view back on Results Page
   const handleSelectSavedItem = (item: TranslationItem) => {
     setCurrentResult(item);
     setCurrentTab('results');
   };
 
-  // Clear or load custom flashcard practicing
-  const handleLoadActiveCard = (item: TranslationItem) => {
-    setActiveCardItem(item);
-  };
-
-  const handleClearActiveCard = () => {
-    setActiveCardItem(null);
-  };
-
-  // Restores standard factory defaults
-  const handleResetApp = () => {
-    localStorage.removeItem('bhashasetu_username');
-    localStorage.removeItem('bhashasetu_lang');
-    localStorage.removeItem('bhashasetu_history');
-    setUserName("Arpita");
-    setTargetLanguage("Hindi");
-    setHistory([]);
-    setCurrentResult(null);
-    setActiveCardItem(null);
-  };
-
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-gray-800 font-sans flex flex-col selection:bg-[#ff9933]/25 selection:text-[#8f4e00]">
-      
-      {/* Top Banner Branding */}
       <Header 
         currentTab={currentTab} 
         onNavigate={setCurrentTab} 
         userName={userName}
       />
 
-      {/* Main Container Stage with Animation */}
       <main className="flex-1 w-full max-w-screen-xl mx-auto pt-4 relative">
         <AnimatePresence mode="wait">
           <motion.div
@@ -141,6 +185,8 @@ export default function App() {
                 onNavigate={setCurrentTab}
                 onSelectSavedItem={handleSelectSavedItem}
                 recentHistory={history}
+                sourceLanguage={sourceLanguage}
+                targetLanguage={targetLanguage}
               />
             )}
 
@@ -148,8 +194,14 @@ export default function App() {
               <OcrTab 
                 onNavigate={setCurrentTab}
                 onSetCurrentResult={handleSetCurrentResult}
+                sourceLanguage={sourceLanguage}
+                onSetSourceLanguage={handleSetSourceLanguage}
                 targetLanguage={targetLanguage}
                 onSetTargetLanguage={handleSetTargetLanguage}
+                isPro={isPro}
+                scansToday={scansToday}
+                onIncrementScan={handleIncrementScan}
+                onUnlockScans={handleUnlockScans}
               />
             )}
 
@@ -158,15 +210,12 @@ export default function App() {
                 currentResult={currentResult}
                 onNavigate={setCurrentTab}
                 onToggleFavorite={handleToggleFavorite}
-                onLoadActiveCard={handleLoadActiveCard}
               />
             )}
 
             {currentTab === 'learn' && (
               <LearnTab 
-                onNavigate={setCurrentTab}
-                activeCardItem={activeCardItem}
-                onClearActiveCard={handleClearActiveCard}
+                sourceLanguage={sourceLanguage}
               />
             )}
 
@@ -185,16 +234,18 @@ export default function App() {
                 onNavigate={setCurrentTab}
                 userName={userName}
                 onSetUserName={handleSetUserName}
+                sourceLanguage={sourceLanguage}
+                onSetSourceLanguage={handleSetSourceLanguage}
                 targetLanguage={targetLanguage}
                 onSetTargetLanguage={handleSetTargetLanguage}
-                onResetApp={handleResetApp}
+                isPro={isPro}
+                onSetIsPro={handleSetIsPro}
               />
             )}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {/* Persistent Bottom Tab Controller */}
       <Navigation currentTab={currentTab} onNavigate={setCurrentTab} />
     </div>
   );

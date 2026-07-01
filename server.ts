@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenAI, Modality } from "@google/genai";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config();
 
@@ -11,7 +12,8 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  app.use(cors());
+  const PORT = process.env.PORT || 3000;
 
   // Support large uploads for base64 camera scans
   app.use(express.json({ limit: "25mb" }));
@@ -132,7 +134,7 @@ async function startServer() {
         }
       }
 
-      const prompt = `You are BhashaSetu, a translation and language learning assistant. 
+      const prompt = `You are BhashaSethu, a translation and language learning assistant. 
 Analyze the uploaded image, find written text in it, perform optical character recognition (OCR), and perform the following:
 1. Detect the source language.
 2. Translate the extracted text into the requested target language: "${targetLanguage}".
@@ -260,6 +262,102 @@ CRITICAL: Return ONLY a strict JSON object (no markdown code blocks, no trailing
     }
   });
 
+  // API Route: OCR Scan (bounding box specific) for OcrTab
+  app.post("/api/ocr-scan", async (req, res) => {
+    try {
+      const { image, sourceLanguage, targetLanguage } = req.body;
+      if (!image) return res.status(400).json({ error: "No image provided" });
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+        return res.json([
+          {
+            original: "Dummy Text",
+            transliterated: "Dummy Transliteration",
+            translated: "Mock translation due to missing key",
+            bbox: [100, 200, 150, 400]
+          }
+        ]);
+      }
+
+      const base64Data = image.includes(',') ? image.split(',')[1] : image;
+      const prompt = `You are BhashaSethu, a translation assistant.
+Carefully analyze the image. The text in the image is primarily in the ${sourceLanguage} language.
+Group the text into logical sentences, paragraphs, or readable blocks rather than single words.
+For each text block, provide:
+1. "original": The original ${sourceLanguage} text in the image.
+2. "transliterated": The exact pronunciation of the original text written using the alphabet of the ${targetLanguage} language (phonetic transliteration).
+3. "translated": The text translated into ${targetLanguage} language.
+4. "bbox": The bounding box as [ymin, xmin, ymax, xmax] scaled between 0 and 1000. It must accurately cover the entire grouped block.
+
+Return ONLY a valid JSON array of objects without markdown wrappers or other text.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType: "image/jpeg", data: base64Data } }
+            ]
+          }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        return res.status(500).json({ error: err });
+      }
+
+      const data = await response.json();
+      let textResult = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+      textResult = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
+      
+      return res.json(JSON.parse(textResult));
+    } catch (error: any) {
+      console.error("OCR Scan Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // API Route: Quick Translate for HomeTab
+  app.post("/api/quick-translate", async (req, res) => {
+    try {
+      const { text, sourceLanguage } = req.body;
+      if (!text) return res.status(400).json({ error: "No text provided" });
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+        return res.json({ translated: "Mock translation due to missing key" });
+      }
+
+      const prompt = `Translate this text into ${sourceLanguage} (the primary detection language). Text: "${text}". Return only the translation without quotes.`;
+      
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 }
+        })
+      });
+      
+      if (!response.ok) {
+        const err = await response.text();
+        return res.status(500).json({ error: err });
+      }
+
+      const data = await response.json();
+      const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Error translating";
+      return res.json({ translated: resultText.trim() });
+    } catch (error: any) {
+      console.error("Quick Translate Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Integrate Vite Dev Server Middleware or Serve Build Output
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
@@ -277,7 +375,7 @@ CRITICAL: Return ONLY a strict JSON object (no markdown code blocks, no trailing
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[BhashaSetu Backend] Server running on http://0.0.0.0:${PORT}`);
+    console.log(`[BhashaSethu Backend] Server running on http://0.0.0.0:${PORT}`);
   });
 }
 

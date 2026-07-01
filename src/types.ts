@@ -29,7 +29,8 @@ export interface TranslationItem {
   timestamp: string;
   isFavorite: boolean;
   sceneryId?: string;
-  sceneryUrl?: string;
+  sceneryUrl?: string; // Image with transliterated text overlay
+  translatedSceneryUrl?: string; // Image with translated meaning overlay
   dictionary: DictionaryEntry[];
   lesson?: LessonPlan;
 }
