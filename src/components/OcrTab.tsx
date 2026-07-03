@@ -70,7 +70,7 @@ export default function OcrTab({
       // Try real AdMob first (works on iOS/Android)
       await showRewardedAd((reward) => {
         console.log('Reward earned from AdMob:', reward);
-        onUnlockScans(2);
+        onUnlockScans(1);
       });
     } catch (err) {
       console.log('AdMob failed (likely on Web), falling back to Simulator:', err);
@@ -83,7 +83,7 @@ export default function OcrTab({
           if (prev <= 1) {
             clearInterval(interval);
             setShowAd(false);
-            onUnlockScans(2); // Subtracts 2 from scansToday, giving 2 more free scans
+            onUnlockScans(1); // Subtracts 1 from scansToday, giving 1 more free scan
             return 0;
           }
           return prev - 1;
@@ -334,7 +334,7 @@ export default function OcrTab({
             </div>
             <h3 className="font-extrabold text-xl text-white mb-2">Daily Limit Reached</h3>
             <p className="text-sm text-neutral-400 mb-8">
-              You've used your 3 free scans for today. Watch a quick ad to unlock 2 more, or upgrade to BhashaSethu Pro for unlimited scans!
+              You've used your 3 free scans for today. Watch a quick ad to unlock 1 more, or upgrade to BhashaSethu Pro for unlimited scans!
             </p>
             
             <div className="w-full space-y-3">
@@ -342,7 +342,7 @@ export default function OcrTab({
                 onClick={handleWatchAd}
                 className="w-full py-3.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl font-bold transition-colors border border-neutral-700"
               >
-                Watch Ad (+2 Scans)
+                Watch Ad (+1 Scan)
               </button>
               <button 
                 onClick={() => { setShowPaywall(false); onNavigate('settings'); }}
