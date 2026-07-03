@@ -377,7 +377,7 @@ export default function OcrTab({
 
       {/* Crop UI Overlay */}
       {cropImageSrc && (
-        <div className="absolute inset-0 z-[90] bg-neutral-950 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col animate-in fade-in zoom-in-95 duration-200">
           <div className="flex-1 overflow-auto flex items-center justify-center p-4">
             <ReactCrop
               crop={crop}
