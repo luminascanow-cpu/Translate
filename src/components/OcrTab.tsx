@@ -40,7 +40,6 @@ export default function OcrTab({
   const [showPaywall, setShowPaywall] = useState(false);
   const [showAd, setShowAd] = useState(false);
   const [adTimer, setAdTimer] = useState(5);
-  const [cleanMode, setCleanMode] = useState(false);
   
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>({
@@ -143,8 +142,8 @@ export default function OcrTab({
         fullTranslatedText += (block.translated || block.original) + " ";
       });
 
-      const compressedImage = await compressImage(displayImage, transliteratedOverlays, cleanMode);
-      const translatedCompressedImage = await compressImage(displayImage, translatedOverlays, cleanMode);
+      const compressedImage = await compressImage(displayImage, transliteratedOverlays, true);
+      const translatedCompressedImage = await compressImage(displayImage, translatedOverlays, true);
 
       const newResult: TranslationItem = {
         id: "scan-" + Date.now(),
@@ -452,17 +451,6 @@ export default function OcrTab({
             ))}
             <option value="English">English</option>
           </select>
-        </div>
-        <div className="flex items-center gap-2 ml-4">
-          <label className="flex items-center cursor-pointer gap-2">
-            <input 
-              type="checkbox" 
-              checked={cleanMode} 
-              onChange={(e) => setCleanMode(e.target.checked)} 
-              className="w-4 h-4 text-[#ff9933] bg-neutral-800 border-neutral-700 rounded focus:ring-[#ff9933]" 
-            />
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Clean Doc Mode</span>
-          </label>
         </div>
       </div>
 
