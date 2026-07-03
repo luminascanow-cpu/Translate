@@ -56,7 +56,7 @@ export default function OcrTab({
   const imgRef = useRef<HTMLImageElement>(null);
 
   const handlePreCaptureCheck = () => {
-    if (!isPro && scansToday >= 3) {
+    if (!isPro && scansToday >= 1) {
       setShowPaywall(true);
       return false;
     }
@@ -333,7 +333,7 @@ export default function OcrTab({
             </div>
             <h3 className="font-extrabold text-xl text-white mb-2">Daily Limit Reached</h3>
             <p className="text-sm text-neutral-400 mb-8">
-              You've used your 3 free scans for today. Watch a quick ad to unlock 1 more, or upgrade to BhashaSethu Pro for unlimited scans!
+              You've used your 1 free scan for today. Watch a quick ad to unlock 1 more, or upgrade to BhashaSethu Pro for unlimited scans!
             </p>
             
             <div className="w-full space-y-3">
@@ -493,7 +493,7 @@ export default function OcrTab({
         {!isPro && (
           <div className="absolute bottom-6 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 z-10">
             <span className="text-xs font-bold text-white/80">
-              {Math.max(0, 3 - scansToday)} free scans left
+              {Math.max(0, 1 - scansToday)} free scan{Math.max(0, 1 - scansToday) !== 1 ? 's' : ''} left
             </span>
           </div>
         )}
