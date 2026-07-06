@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   const app = express();
   app.use(cors());
-  const PORT = process.env.PORT || 3000;
+  const PORT = parseInt(process.env.PORT || "3000", 10);
 
   // Support large uploads for base64 camera scans
   app.use(express.json({ limit: "25mb" }));
@@ -356,6 +356,14 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
       console.error("Quick Translate Error:", error);
       res.status(500).json({ error: error.message });
     }
+  });
+
+  // Serve website landing page / privacy policy files
+  app.get("/privacy.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "privacy.html"));
+  });
+  app.get("/style.css", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "style.css"));
   });
 
   // Integrate Vite Dev Server Middleware or Serve Build Output

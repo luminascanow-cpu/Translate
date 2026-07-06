@@ -1,4 +1,4 @@
-import { AdMob, RewardAdOptions, AdMobRewardItem } from '@capacitor-community/admob';
+import { AdMob, RewardAdOptions, AdMobRewardItem, RewardAdPluginEvents } from '@capacitor-community/admob';
 import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
 import { Capacitor } from '@capacitor/core';
 
@@ -15,9 +15,11 @@ export const initializeMonetization = async () => {
   try {
     // 1. Initialize AdMob
     await AdMob.initialize({
-      requestTrackingAuthorization: true,
       initializeForTesting: false,
     });
+    if (Capacitor.getPlatform() === 'ios') {
+      await AdMob.requestTrackingAuthorization();
+    }
     console.log('AdMob Initialized');
 
     // 2. Initialize RevenueCat
@@ -50,11 +52,11 @@ export const prepareRewardedAd = async () => {
 export const showRewardedAd = async (onReward: (reward: AdMobRewardItem) => void) => {
   try {
     // Register listener for reward
-    const rewardListener = AdMob.addListener('onRewardedVideoAdReward', (reward: AdMobRewardItem) => {
+    const rewardListener = await AdMob.addListener(RewardAdPluginEvents.Rewarded, (reward: AdMobRewardItem) => {
       onReward(reward);
     });
     
-    const dismissListener = AdMob.addListener('onRewardedVideoAdDismissed', () => {
+    const dismissListener = await AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
       rewardListener.remove();
       dismissListener.remove();
       // Prepare the next ad for future use
@@ -70,7 +72,7 @@ export const showRewardedAd = async (onReward: (reward: AdMobRewardItem) => void
 
 export const checkProStatus = async (): Promise<boolean> => {
   try {
-    const customerInfo = await Purchases.getCustomerInfo();
+    const { customerInfo } = await Purchases.getCustomerInfo();
     // Assuming the entitlement identifier in RevenueCat is 'pro'
     return typeof customerInfo.entitlements.active['pro'] !== 'undefined';
   } catch (err) {
@@ -108,7 +110,7 @@ export const purchasePackage = async (pack: any): Promise<boolean> => {
 
 export const restorePurchases = async (): Promise<boolean> => {
   try {
-    const customerInfo = await Purchases.restorePurchases();
+    const { customerInfo } = await Purchases.restorePurchases();
     return typeof customerInfo.entitlements.active['pro'] !== 'undefined';
   } catch (err) {
     console.error('Restore failed:', err);

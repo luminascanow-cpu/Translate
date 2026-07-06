@@ -119,12 +119,7 @@ export default function App() {
 
   const saveHistoryToStorage = (hist: TranslationItem[]) => {
     try {
-      const historyToSave = hist.map(item => ({
-        ...item,
-        sceneryUrl: "",
-        translatedSceneryUrl: ""
-      }));
-      localStorage.setItem('bhashasethu_history', JSON.stringify(historyToSave));
+      localStorage.setItem('bhashasethu_history', JSON.stringify(hist));
     } catch (e) {
       console.warn("Storage quota exceeded or error saving history:", e);
     }

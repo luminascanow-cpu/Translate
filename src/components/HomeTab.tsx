@@ -33,7 +33,7 @@ export default function HomeTab({ userName, onNavigate, onSelectSavedItem, recen
       });
       
       const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Error translating";
+      const text = data.translated || data.error || "Error translating";
       setTranslatedText(text.trim());
     } catch (e) {
       console.error(e);
