@@ -365,6 +365,9 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
   app.get("/style.css", (req, res) => {
     res.sendFile(path.join(__dirname, "website", "style.css"));
   });
+  app.get("/bhashasethu.apk", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "app-release.apk"));
+  });
 
   // Integrate Vite Dev Server Middleware or Serve Build Output
   if (process.env.NODE_ENV !== "production") {
