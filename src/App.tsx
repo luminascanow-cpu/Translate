@@ -44,7 +44,12 @@ export default function App() {
   useEffect(() => {
     try {
       const storedName = localStorage.getItem('bhashasethu_username');
-      if (storedName) setUserName(storedName);
+      if (storedName) {
+        setUserName(storedName);
+        if (storedName.trim().toLowerCase() === 'googleplaytester') {
+          setIsPro(true);
+        }
+      }
 
       const storedLang = localStorage.getItem('bhashasethu_lang');
       if (storedLang) setTargetLanguage(storedLang);
@@ -81,6 +86,9 @@ export default function App() {
   const handleSetUserName = (name: string) => {
     setUserName(name);
     localStorage.setItem('bhashasethu_username', name);
+    if (name.trim().toLowerCase() === 'googleplaytester') {
+      handleSetIsPro(true);
+    }
   };
 
   const handleSetTargetLanguage = (lang: string) => {

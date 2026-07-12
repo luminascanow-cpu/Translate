@@ -104,30 +104,63 @@ export default function SettingsTab({
           
           {!isPro && (
             <div className="grid grid-cols-3 gap-2 mt-4 z-10 relative">
-              <button 
-                onClick={() => packages.length > 0 ? handlePurchase(packages[0]) : onSetIsPro(true)}
-                disabled={isPurchasing}
-                className="flex flex-col items-center justify-center p-2 bg-white/80 hover:bg-white border border-[#ff9933]/20 rounded-xl transition-colors active:scale-95"
-              >
-                <span className="text-[10px] text-gray-500 font-bold uppercase">Weekly</span>
-                <span className="text-sm font-extrabold text-[#8f4e00]">₹49</span>
-              </button>
-              <button 
-                onClick={() => packages.length > 1 ? handlePurchase(packages[1]) : onSetIsPro(true)}
-                disabled={isPurchasing}
-                className="flex flex-col items-center justify-center p-2 bg-[#ff9933] hover:bg-[#ff8800] border border-[#ff9933] rounded-xl transition-colors text-white shadow-md active:scale-95"
-              >
-                <span className="text-[10px] text-white/80 font-bold uppercase">Monthly</span>
-                <span className="text-sm font-extrabold">₹149</span>
-              </button>
-              <button 
-                onClick={() => packages.length > 2 ? handlePurchase(packages[2]) : onSetIsPro(true)}
-                disabled={isPurchasing}
-                className="flex flex-col items-center justify-center p-2 bg-white/80 hover:bg-white border border-[#ff9933]/20 rounded-xl transition-colors active:scale-95"
-              >
-                <span className="text-[10px] text-gray-500 font-bold uppercase">Yearly</span>
-                <span className="text-sm font-extrabold text-[#8f4e00]">₹799</span>
-              </button>
+              {packages.length > 0 ? (
+                packages.map((pack) => {
+                  const isMonthly = pack.packageType === 'MONTHLY';
+                  let durationLabel = 'Plan';
+                  if (pack.packageType === 'WEEKLY') durationLabel = 'Weekly';
+                  else if (pack.packageType === 'MONTHLY') durationLabel = 'Monthly';
+                  else if (pack.packageType === 'ANNUAL') durationLabel = 'Yearly';
+                  else if (pack.packageType === 'LIFETIME') durationLabel = 'Lifetime';
+                  
+                  return (
+                    <button 
+                      key={pack.identifier}
+                      onClick={() => handlePurchase(pack)}
+                      disabled={isPurchasing}
+                      className={`flex flex-col items-center justify-center p-2.5 rounded-xl transition-all border active:scale-95 ${
+                        isMonthly 
+                          ? 'bg-[#ff9933] hover:bg-[#ff8800] border-[#ff9933] text-white shadow-md' 
+                          : 'bg-white/80 hover:bg-white border-[#ff9933]/20 text-gray-800'
+                      }`}
+                    >
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${isMonthly ? 'text-white/80' : 'text-gray-500'}`}>
+                        {durationLabel}
+                      </span>
+                      <span className={`text-sm font-extrabold mt-0.5 ${isMonthly ? 'text-white' : 'text-[#8f4e00]'}`}>
+                        {pack.storeProduct.priceString}
+                      </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <>
+                  <button 
+                    onClick={() => onSetIsPro(true)}
+                    disabled={isPurchasing}
+                    className="flex flex-col items-center justify-center p-2 bg-white/80 hover:bg-white border border-[#ff9933]/20 rounded-xl transition-colors active:scale-95"
+                  >
+                    <span className="text-[10px] text-gray-500 font-bold uppercase">Weekly</span>
+                    <span className="text-sm font-extrabold text-[#8f4e00]">₹49</span>
+                  </button>
+                  <button 
+                    onClick={() => onSetIsPro(true)}
+                    disabled={isPurchasing}
+                    className="flex flex-col items-center justify-center p-2 bg-[#ff9933] hover:bg-[#ff8800] border border-[#ff9933] rounded-xl transition-colors text-white shadow-md active:scale-95"
+                  >
+                    <span className="text-[10px] text-white/80 font-bold uppercase">Monthly</span>
+                    <span className="text-sm font-extrabold">₹149</span>
+                  </button>
+                  <button 
+                    onClick={() => onSetIsPro(true)}
+                    disabled={isPurchasing}
+                    className="flex flex-col items-center justify-center p-2 bg-white/80 hover:bg-white border border-[#ff9933]/20 rounded-xl transition-colors active:scale-95"
+                  >
+                    <span className="text-[10px] text-gray-500 font-bold uppercase">Yearly</span>
+                    <span className="text-sm font-extrabold text-[#8f4e00]">₹799</span>
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
