@@ -360,13 +360,13 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
 
   // Serve website landing page / privacy policy files
   app.get("/privacy.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "website", "privacy.html"));
+    res.sendFile(path.join(process.cwd(), "website", "privacy.html"));
   });
   app.get("/style.css", (req, res) => {
-    res.sendFile(path.join(__dirname, "website", "style.css"));
+    res.sendFile(path.join(process.cwd(), "website", "style.css"));
   });
   app.get("/bhashasethu.apk", (req, res) => {
-    res.sendFile(path.join(__dirname, "website", "app-release.apk"));
+    res.sendFile(path.join(process.cwd(), "website", "app-release.apk"));
   });
 
   // Integrate Vite Dev Server Middleware or Serve Build Output
