@@ -33,6 +33,7 @@ export default function OcrTab({
 }: OcrTabProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("Analyzing Script...");
+  const [progress, setProgress] = useState(0);
   const [flashOn, setFlashOn] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   
@@ -94,6 +95,17 @@ export default function OcrTab({
   const executeOcrScan = async (ocrImage: string, displayImage: string, textContext: string) => {
     setIsLoading(true);
     setLoadingStatus("Analyzing image...");
+    setProgress(5);
+
+    let currentProgress = 5;
+    const progressInterval = setInterval(() => {
+      if (currentProgress < 90) {
+        currentProgress += Math.floor(Math.random() * 5) + 3; // Increment by 3-7%
+        if (currentProgress > 90) currentProgress = 90;
+        setProgress(currentProgress);
+      }
+    }, 150);
+
     try {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
@@ -115,6 +127,8 @@ export default function OcrTab({
       const blocks = await response.json();
 
       setLoadingStatus("Generating AR overlays...");
+      currentProgress = 95;
+      setProgress(95);
 
       const img = new Image();
       img.src = displayImage;
@@ -175,7 +189,11 @@ export default function OcrTab({
       console.error(err);
       alert("Scan failed: " + (err.message || JSON.stringify(err)));
     } finally {
-      setIsLoading(false);
+      clearInterval(progressInterval);
+      setProgress(100);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 400);
     }
   };
 
@@ -485,6 +503,12 @@ export default function OcrTab({
               <p className="text-xs font-bold font-sans tracking-wide text-[#ffdcc2] animate-pulse">
                 {loadingStatus}
               </p>
+              <div className="w-48 h-1.5 bg-neutral-800 rounded-full overflow-hidden mt-1 border border-white/5 shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#ff9933] to-[#ffbb66] transition-all duration-300 ease-out rounded-full"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
             </div>
           )}
         </div>
