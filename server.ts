@@ -379,7 +379,12 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
+    const websitePath = path.join(process.cwd(), "website");
+    
+    // Serve static files from website/ (e.g., privacy.html, terms.html) but ignore index.html to protect React SPA
+    app.use(express.static(websitePath, { index: false }));
     app.use(express.static(distPath));
+    
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
