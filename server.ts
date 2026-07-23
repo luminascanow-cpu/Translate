@@ -1,4 +1,5 @@
 import express from "express";
+import Tesseract from "tesseract.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -318,7 +319,83 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
       return res.json(JSON.parse(textResult));
     } catch (error: any) {
       console.error("OCR Scan Error:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ 
+        error: "Failed to perform OCR scan via Gemini.", 
+        details: error?.message || "Unknown error" 
+      });
+    }
+  });
+
+  // NEW API Route: Fast OCR (Tesseract + Gemini Text-Only Translation)
+  app.post("/api/fast-ocr", async (req, res) => {
+    try {
+      const { image, sourceLanguage, targetLanguage, imgWidth, imgHeight } = req.body;
+      if (!image) return res.status(400).json({ error: "No image provided" });
+
+      const base64Data = image.includes(',') ? image.split(',')[1] : image;
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      console.log("Running Tesseract OCR on backend...");
+      // For best speed, using 'eng' or generic, could map sourceLanguage to Tesseract codes if needed.
+      const tesseractResult = await Tesseract.recognize(buffer, 'eng');
+      
+      const lines = (tesseractResult.data.blocks || [])
+        .flatMap(b => b.paragraphs || [])
+        .flatMap(p => p.lines || []);
+
+      const blocks = lines.map(line => {
+        return {
+          original: line.text.trim(),
+          // Tesseract gives { x0, y0, x1, y1 }. We scale to [ymin, xmin, ymax, xmax] out of 1000
+          bbox: [
+            (line.bbox.y0 / imgHeight) * 1000, // ymin
+            (line.bbox.x0 / imgWidth) * 1000, // xmin
+            (line.bbox.y1 / imgHeight) * 1000, // ymax
+            (line.bbox.x1 / imgWidth) * 1000  // xmax
+          ]
+        };
+      }).filter(b => b.original.length > 1);
+
+      if (blocks.length === 0) {
+         return res.json([]);
+      }
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+        return res.json(blocks.map(b => ({ ...b, translated: "Mock translation", transliterated: "" })));
+      }
+
+      console.log("Translating extracted text blocks via Gemini...");
+      const textArray = blocks.map(b => b.original);
+      const prompt = `Translate this JSON array of text strings from ${sourceLanguage} to ${targetLanguage}.
+Return ONLY a valid JSON array of translated strings in the exact same order. Do not wrap in markdown.
+["${textArray.join('", "')}"]`;
+
+      const ai = getAiClient();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ parts: [{ text: prompt }] }],
+        config: { responseMimeType: "application/json" }
+      });
+
+      const translatedArrayText = response.text || "[]";
+      const translatedArray = JSON.parse(translatedArrayText);
+
+      // Merge translations back into blocks
+      const finalResult = blocks.map((block, index) => ({
+        original: block.original,
+        translated: translatedArray[index] || block.original,
+        transliterated: "", // Dropped for speed as requested!
+        bbox: block.bbox
+      }));
+
+      return res.json(finalResult);
+    } catch (error: any) {
+      console.error("Fast OCR Scan Error:", error);
+      res.status(500).json({ 
+        error: "Failed to perform fast OCR scan.", 
+        details: error?.message || "Unknown error" 
+      });
     }
   });
 
