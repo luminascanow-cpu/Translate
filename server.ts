@@ -339,9 +339,7 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
       // For best speed, using 'eng' or generic, could map sourceLanguage to Tesseract codes if needed.
       const tesseractResult = await Tesseract.recognize(buffer, 'eng');
       
-      const lines = (tesseractResult.data.blocks || [])
-        .flatMap(b => b.paragraphs || [])
-        .flatMap(p => p.lines || []);
+      const lines = tesseractResult.data.lines || [];
 
       const blocks = lines.map(line => {
         return {
@@ -368,8 +366,9 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
       console.log("Translating extracted text blocks via Gemini...");
       const textArray = blocks.map(b => b.original);
       const prompt = `Translate this JSON array of text strings from ${sourceLanguage} to ${targetLanguage}.
-Return ONLY a valid JSON array of translated strings in the exact same order. Do not wrap in markdown.
-["${textArray.join('", "')}"]`;
+Return ONLY a valid JSON array of strings in the exact same order. Do not include markdown, code blocks, or extra text.
+Input:
+${JSON.stringify(textArray)}`;
 
       const ai = getAiClient();
       const response = await ai.models.generateContent({
