@@ -5,7 +5,12 @@ export const getSarvamLangCode = (lang: string): string => {
     "Bengali": "bn-IN",
     "Tamil": "ta-IN",
     "Telugu": "te-IN",
-    "English": "en-IN"
+    "English": "en-IN",
+    "Malayalam": "ml-IN",
+    "Kannada": "kn-IN",
+    "Gujarati": "gu-IN",
+    "Punjabi": "pa-IN",
+    "Odia": "or-IN"
   };
   return languageMap[lang] || "hi-IN";
 };

@@ -337,7 +337,7 @@ export default function OcrTab({
     }
   };
 
-  const languagesList = ["Hindi", "Marathi", "Bengali", "Tamil", "Telugu"];
+  const languagesList = ["Hindi", "Marathi", "Bengali", "Tamil", "Telugu", "Malayalam", "Kannada", "Gujarati", "Punjabi", "Odia"];
 
   return (
     <div className="w-full animate-fade-in bg-black text-white min-h-[calc(100vh-144px)] flex flex-col relative select-none">

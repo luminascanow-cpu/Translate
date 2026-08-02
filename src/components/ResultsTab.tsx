@@ -32,6 +32,11 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
       case "Tamil": return "ta-IN";
       case "Telugu": return "te-IN";
       case "Marathi": return "mr-IN";
+      case "Malayalam": return "ml-IN";
+      case "Kannada": return "kn-IN";
+      case "Gujarati": return "gu-IN";
+      case "Punjabi": return "pa-IN";
+      case "Odia": return "or-IN";
       default: return "hi-IN";
     }
   };

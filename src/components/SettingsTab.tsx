@@ -26,7 +26,7 @@ export default function SettingsTab({
   isPro,
   onSetIsPro
 }: SettingsTabProps) {
-  const languagesList = ["English", "Hindi", "Marathi", "Bengali", "Tamil", "Telugu"];
+  const languagesList = ["English", "Hindi", "Marathi", "Bengali", "Tamil", "Telugu", "Malayalam", "Kannada", "Gujarati", "Punjabi", "Odia"];
   
   const [packages, setPackages] = useState<any[]>([]);
   const [isPurchasing, setIsPurchasing] = useState(false);
