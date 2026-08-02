@@ -31,10 +31,24 @@ export const getProcessedImages = async (base64Str: string): Promise<{ocrImage: 
       if (ctx) {
         // Draw the image resized
         ctx.drawImage(img, 0, 0, width, height);
-        // We use the same image for both display and OCR
-        const processedDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+        // displayImage is high quality for AR overlays
+        const displayImage = canvas.toDataURL("image/jpeg", 0.95);
         
-        resolve({ocrImage: processedDataUrl, displayImage: processedDataUrl});
+        // ocrImage is heavily compressed to speed up network upload (1024 max, 0.6 quality)
+        let ocrWidth = width;
+        let ocrHeight = height;
+        const OCR_MAX = 1024;
+        if (ocrWidth > ocrHeight && ocrWidth > OCR_MAX) { ocrHeight *= OCR_MAX / ocrWidth; ocrWidth = OCR_MAX; }
+        else if (ocrHeight > OCR_MAX) { ocrWidth *= OCR_MAX / ocrHeight; ocrHeight = OCR_MAX; }
+        
+        const ocrCanvas = document.createElement("canvas");
+        ocrCanvas.width = ocrWidth;
+        ocrCanvas.height = ocrHeight;
+        const ocrCtx = ocrCanvas.getContext("2d");
+        ocrCtx?.drawImage(img, 0, 0, ocrWidth, ocrHeight);
+        const ocrImage = ocrCanvas.toDataURL("image/jpeg", 0.6);
+
+        resolve({ocrImage, displayImage});
       } else {
         resolve({ocrImage: base64Str, displayImage: base64Str});
       }

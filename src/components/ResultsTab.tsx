@@ -11,10 +11,11 @@ interface ResultsTabProps {
 }
 
 export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite }: ResultsTabProps) {
-  const [activeImageMode, setActiveImageMode] = useState<'transliterated' | 'translated'>('transliterated');
+  const [activeImageMode, setActiveImageMode] = useState<'transliterated' | 'translated'>('translated');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
 
   // Web Speech API Synthesis state
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -116,6 +117,7 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
   const handleTTS = async () => {
     // If the user uses standard speaker button, we trigger our custom Web Speech API speaker automatically!
     speakWebSpeech();
+    setShowAudioSettings(true);
   };
 
   const handleShare = () => {
@@ -204,42 +206,46 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
           </div>
         </section>
 
-        {/* Translation Actions */}
-        <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-100 border-l-4 border-l-[#ff9933] space-y-4">
-          <div className="flex justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#ff9933]" />
-              <span className="font-sans font-extrabold text-gray-900">Audio & Actions</span>
-            </div>
-
-            {/* real-time speaker voice call trigger */}
-            <button 
-              onClick={handleTTS}
-              className={`p-4 rounded-full shadow-md active:scale-90 transition-transform focus:outline-hidden flex-shrink-0 ${
-                isSpeakingWebSpeech 
-                  ? 'bg-amber-100 text-[#ff9933] animate-pulse border border-amber-200' 
-                  : 'bg-[#ff9933] hover:bg-[#ff8800] text-white'
-              }`}
-              title="Speak Pronunciation (Web Speech API)"
-            >
-              <Volume2 className="w-6 h-6" />
-            </button>
+        {/* On-Demand Audio Play Button */}
+        <section className="bg-white rounded-2xl p-4 shadow-xs border border-gray-100 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="font-sans font-extrabold text-gray-900 text-sm">Pronunciation</span>
+            <span className="text-xs text-gray-500">Play translation audio on demand</span>
           </div>
 
-          {/* Web Speech API Voice Customization Panel */}
-          <div className="bg-[#fff9f3] rounded-xl p-4 border border-orange-100 space-y-3">
+          <button 
+            onClick={handleTTS}
+            className={`p-3 rounded-full shadow-md active:scale-90 transition-transform focus:outline-hidden ${
+              isSpeakingWebSpeech 
+                ? 'bg-amber-100 text-[#ff9933] animate-pulse border border-amber-200' 
+                : 'bg-[#ff9933] hover:bg-[#ff8800] text-white'
+            }`}
+            title="Play Audio"
+          >
+            <Volume2 className="w-5 h-5" />
+          </button>
+        </section>
+
+        {/* Web Speech API Voice Customization Panel - On Demand */}
+        {showAudioSettings && (
+          <div className="bg-[#fff9f3] rounded-xl p-4 border border-orange-100 space-y-3 animate-in slide-in-from-top-2 fade-in duration-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-[#8f4e00] font-sans font-extrabold text-xs uppercase tracking-wider">
                 <Sliders className="w-4 h-4 text-[#ff9933]" />
-                Web Speech Voice Settings
+                Audio Settings
               </div>
-              <span className="text-[10px] text-gray-400 font-bold uppercase">Web Speech API</span>
+              <button 
+                onClick={() => setShowAudioSettings(false)}
+                className="text-gray-400 hover:text-gray-600 focus:outline-hidden"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
               {/* Voice selector */}
               <div className="space-y-1">
-                <label className="font-semibold text-gray-600 block">Select Native Voice</label>
+                <label className="font-semibold text-gray-600 block">Select Voice</label>
                 <select
                   value={selectedVoiceURI}
                   onChange={(e) => setSelectedVoiceURI(e.target.value)}
@@ -290,41 +296,8 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
                 </div>
               </div>
             </div>
-
-            {/* Speaking Controller Buttons */}
-            <div className="flex gap-2 pt-2 border-t border-orange-100/50">
-              <button
-                onClick={speakWebSpeech}
-                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 focus:outline-hidden ${
-                  isSpeakingWebSpeech && !isPausedWebSpeech
-                    ? 'bg-[#056e00] text-white'
-                    : 'bg-[#ff9933] hover:bg-[#ff8800] text-white shadow-xs'
-                }`}
-              >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                {isSpeakingWebSpeech && !isPausedWebSpeech ? 'Speaking...' : 'Speak aloud'}
-              </button>
-
-              <button
-                onClick={pauseWebSpeech}
-                disabled={!isSpeakingWebSpeech}
-                className="py-2 px-3 bg-white border border-gray-200 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-50 disabled:opacity-50 transition-all flex items-center gap-1.5 focus:outline-hidden"
-              >
-                <Pause className="w-3.5 h-3.5" />
-                {isPausedWebSpeech ? 'Resume' : 'Pause'}
-              </button>
-
-              <button
-                onClick={stopWebSpeech}
-                disabled={!isSpeakingWebSpeech}
-                className="py-2 px-3 bg-white border border-rose-200 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-50 disabled:opacity-50 transition-all flex items-center gap-1.5 focus:outline-hidden"
-              >
-                <Square className="w-3.5 h-3.5 fill-current" />
-                Stop
-              </button>
-            </div>
           </div>
-
+        )}
           {/* Bento Grid Actions Quick Links */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
             <button 
@@ -358,13 +331,6 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
 
 
           </div>
-        </section>
-
-
-
-
-
-
       </div>
 
       {/* Full Screen Modal */}
