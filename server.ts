@@ -302,7 +302,24 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
               { inlineData: { mimeType: "image/jpeg", data: base64Data } }
             ]
           }],
-          generationConfig: { responseMimeType: "application/json" }
+          generationConfig: { 
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  original: { type: "STRING" },
+                  translated: { type: "STRING" },
+                  bbox: {
+                    type: "ARRAY",
+                    items: { type: "NUMBER" }
+                  }
+                },
+                required: ["original", "translated", "bbox"]
+              }
+            }
+          }
         })
       });
 
