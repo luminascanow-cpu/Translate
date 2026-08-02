@@ -287,8 +287,9 @@ Carefully analyze the image. The text in the image is primarily in the ${sourceL
 Group the text into logical sentences, paragraphs, or readable blocks rather than single words.
 For each text block, provide:
 1. "original": The original ${sourceLanguage} text in the image.
-2. "translated": The text translated into ${targetLanguage} language.
-3. "bbox": The bounding box as [ymin, xmin, ymax, xmax] scaled between 0 and 1000. It must accurately cover the entire grouped block.
+2. "transliterated": The original text transliterated into English/Latin characters for readability.
+3. "translated": The text translated into ${targetLanguage} language.
+4. "bbox": The bounding box as [ymin, xmin, ymax, xmax] scaled between 0 and 1000. It must accurately cover the entire grouped block.
 
 Return ONLY a valid JSON array of objects without markdown wrappers or other text.`;
 
@@ -310,13 +311,14 @@ Return ONLY a valid JSON array of objects without markdown wrappers or other tex
                 type: "OBJECT",
                 properties: {
                   original: { type: "STRING" },
+                  transliterated: { type: "STRING" },
                   translated: { type: "STRING" },
                   bbox: {
                     type: "ARRAY",
                     items: { type: "NUMBER" }
                   }
                 },
-                required: ["original", "translated", "bbox"]
+                required: ["original", "transliterated", "translated", "bbox"]
               }
             }
           }
