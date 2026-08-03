@@ -132,8 +132,11 @@ export default function LearnTab({ sourceLanguage }: LearnTabProps) {
 
                     <div className="text-7xl text-[#ff9933] font-extrabold mb-2">{activeAlphabet.letter}</div>
                     {activeAlphabet.transliteration && (
-                      <div className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-2">
-                        {activeAlphabet.transliteration}
+                      <div className="flex flex-col items-center mb-2">
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Readable Native Text</div>
+                        <div className="text-lg text-gray-700 font-extrabold uppercase tracking-wider">
+                          {activeAlphabet.transliteration}
+                        </div>
                       </div>
                     )}
 
