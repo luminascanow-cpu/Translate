@@ -98,11 +98,12 @@ export const compressImage = async (base64Str: string, overlays?: TextOverlay[],
             const sWidth = (overlay.bbox.x1 - overlay.bbox.x0) * scaleX;
             const sHeight = (overlay.bbox.y1 - overlay.bbox.y0) * scaleY;
 
-            const padding = 4;
+            const padding = 12; // Increase padding to ensure original text is completely hidden
+            let textColor = "#000000";
             
             if (!renderBlankCanvas) {
-              const sampleX = Math.max(0, sx - padding);
-              const sampleY = Math.max(0, sy - padding);
+              const sampleX = Math.max(0, sx - 2);
+              const sampleY = Math.max(0, sy - 2);
               
               try {
                 const pixelData = ctx.getImageData(sampleX, sampleY, 1, 1).data;
@@ -111,19 +112,22 @@ export const compressImage = async (base64Str: string, overlays?: TextOverlay[],
                 const bgB = pixelData[2];
                 
                 ctx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
-                // Oversize the rectangle to completely obscure the original text
-                ctx.fillRect(sx - (padding*2), sy - (padding*2), sWidth + (padding * 4), sHeight + (padding * 4));
-                ctx.fillStyle = "#8f3316";
+                ctx.fillRect(sx - padding, sy - padding, sWidth + (padding * 2), sHeight + (padding * 2));
+                
+                // Determine text color based on background luminance
+                const luminance = 0.299 * bgR + 0.587 * bgG + 0.114 * bgB;
+                textColor = luminance > 128 ? "#000000" : "#ffffff";
+                ctx.fillStyle = textColor;
               } catch (e) {
                 ctx.fillStyle = "white";
-                ctx.fillRect(sx - (padding*2), sy - (padding*2), sWidth + (padding * 4), sHeight + (padding * 4));
-                ctx.fillStyle = "#8f3316";
+                ctx.fillRect(sx - padding, sy - padding, sWidth + (padding * 2), sHeight + (padding * 2));
+                ctx.fillStyle = "#000000";
               }
             } else {
               // Draw a solid white box over the original text to hide it cleanly
               ctx.fillStyle = "#ffffff";
-              ctx.fillRect(sx - (padding*2), sy - (padding*2), sWidth + (padding * 4), sHeight + (padding * 4));
-              ctx.fillStyle = "#000000"; // Black text on white box
+              ctx.fillRect(sx - padding, sy - padding, sWidth + (padding * 2), sHeight + (padding * 2));
+              ctx.fillStyle = "#000000";
             }
 
             // Binary Search for optimal font size to fit text perfectly inside the bounding box

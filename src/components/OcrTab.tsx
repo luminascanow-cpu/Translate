@@ -156,8 +156,8 @@ export default function OcrTab({
         fullTranslatedText += (block.translated || block.original) + " ";
       });
 
-      const compressedImage = await compressImage(displayImage, transliteratedOverlays, true);
-      const translatedCompressedImage = await compressImage(displayImage, translatedOverlays, true);
+      const compressedImage = await compressImage(displayImage, transliteratedOverlays, false);
+      const translatedCompressedImage = await compressImage(displayImage, translatedOverlays, false);
 
       const newResult: TranslationItem = {
         id: "scan-" + Date.now(),

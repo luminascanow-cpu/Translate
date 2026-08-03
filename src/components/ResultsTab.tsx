@@ -158,29 +158,7 @@ export default function ResultsTab({ currentResult, onNavigate, onToggleFavorite
         </div>
 
 
-        {/* AR Image Toggle */}
-        <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
-          <button
-            onClick={() => setActiveImageMode('transliterated')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all focus:outline-hidden ${
-              activeImageMode === 'transliterated' 
-                ? 'bg-white text-gray-900 shadow-xs' 
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Readable Native Text
-          </button>
-          <button
-            onClick={() => setActiveImageMode('translated')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all focus:outline-hidden ${
-              activeImageMode === 'translated' 
-                ? 'bg-white text-gray-900 shadow-xs' 
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Translated Meaning
-          </button>
-        </div>
+
 
         {/* Source Snippet Image with AR Overlay */}
         <section className="bg-white rounded-2xl overflow-hidden shadow-xs border border-gray-100 relative group">
