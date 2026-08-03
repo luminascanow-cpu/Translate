@@ -98,7 +98,8 @@ export const compressImage = async (base64Str: string, overlays?: TextOverlay[],
             const sWidth = (overlay.bbox.x1 - overlay.bbox.x0) * scaleX;
             const sHeight = (overlay.bbox.y1 - overlay.bbox.y0) * scaleY;
 
-            const padding = 12; // Increase padding to ensure original text is completely hidden
+            const horizontalPadding = sWidth * 0.25 + 20; // Aggressive horizontal padding to cover shifted bounding boxes
+            const verticalPadding = Math.min(sHeight * 0.4, 20); // Vertical padding
             let textColor = "#000000";
             
             if (!renderBlankCanvas) {
@@ -112,7 +113,7 @@ export const compressImage = async (base64Str: string, overlays?: TextOverlay[],
                 const bgB = pixelData[2];
                 
                 ctx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
-                ctx.fillRect(sx - padding, sy - padding, sWidth + (padding * 2), sHeight + (padding * 2));
+                ctx.fillRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2));
                 
                 // Determine text color based on background luminance
                 const luminance = 0.299 * bgR + 0.587 * bgG + 0.114 * bgB;
@@ -120,13 +121,13 @@ export const compressImage = async (base64Str: string, overlays?: TextOverlay[],
                 ctx.fillStyle = textColor;
               } catch (e) {
                 ctx.fillStyle = "white";
-                ctx.fillRect(sx - padding, sy - padding, sWidth + (padding * 2), sHeight + (padding * 2));
+                ctx.fillRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2));
                 ctx.fillStyle = "#000000";
               }
             } else {
               // Draw a solid white box over the original text to hide it cleanly
               ctx.fillStyle = "#ffffff";
-              ctx.fillRect(sx - padding, sy - padding, sWidth + (padding * 2), sHeight + (padding * 2));
+              ctx.fillRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2));
               ctx.fillStyle = "#000000";
             }
 
