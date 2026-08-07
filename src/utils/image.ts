@@ -98,8 +98,8 @@ export const compressImage = async (base64Str: string, overlays?: TextOverlay[],
             const sWidth = (overlay.bbox.x1 - overlay.bbox.x0) * scaleX;
             const sHeight = (overlay.bbox.y1 - overlay.bbox.y0) * scaleY;
 
-            const horizontalPadding = sWidth * 0.25 + 20; // Aggressive horizontal padding to cover shifted bounding boxes
-            const verticalPadding = Math.min(sHeight * 0.4, 20); // Vertical padding
+            const horizontalPadding = sWidth * 0.05 + 5; // Softer horizontal padding
+            const verticalPadding = Math.min(sHeight * 0.1, 5); // Softer vertical padding
             let textColor = "#000000";
             
             if (!renderBlankCanvas) {
@@ -112,16 +112,28 @@ export const compressImage = async (base64Str: string, overlays?: TextOverlay[],
                 const bgG = pixelData[1];
                 const bgB = pixelData[2];
                 
-                ctx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
-                ctx.fillRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2));
+                ctx.fillStyle = `rgba(${bgR}, ${bgG}, ${bgB}, 0.95)`; // 95% opaque to slightly blend
+                if (typeof ctx.roundRect === 'function') {
+                  ctx.beginPath();
+                  ctx.roundRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2), 8);
+                  ctx.fill();
+                } else {
+                  ctx.fillRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2));
+                }
                 
                 // Determine text color based on background luminance
                 const luminance = 0.299 * bgR + 0.587 * bgG + 0.114 * bgB;
                 textColor = luminance > 128 ? "#000000" : "#ffffff";
                 ctx.fillStyle = textColor;
               } catch (e) {
-                ctx.fillStyle = "white";
-                ctx.fillRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2));
+                ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+                if (typeof ctx.roundRect === 'function') {
+                  ctx.beginPath();
+                  ctx.roundRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2), 8);
+                  ctx.fill();
+                } else {
+                  ctx.fillRect(sx - horizontalPadding, sy - verticalPadding, sWidth + (horizontalPadding * 2), sHeight + (verticalPadding * 2));
+                }
                 ctx.fillStyle = "#000000";
               }
             } else {
